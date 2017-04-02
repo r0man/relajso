@@ -1,5 +1,7 @@
 (ns relajso.core
-  (:require [goog.object :as obj]))
+  (:refer-clojure :exclude [get])
+  (:require [cljsjs.react-relay]
+            [goog.object :as obj]))
 
 (enable-console-print!)
 
@@ -15,11 +17,12 @@
   (prepare-vars [this] "A method to modify the variables based on the
   runtime environment or previous variable values."))
 
-(defn inject-network-layer
-  "Inject the Relay network layer."
-  []
-  (js/Relay.injectNetworkLayer
-   (js/Relay.DefaultNetworkLayer. "http://localhost:7000/graphql")))
-
-(defn oget [obj & ks]
+(defn get [obj & ks]
   (apply obj/getValueByKeys obj (map name ks)))
+
+(defn setup-network
+  "Inject the Relay network layer for `url`."
+  [url]
+  (->> (js/Relay.DefaultNetworkLayer. url)
+       (js/Relay.injectNetworkLayer))
+  url)
