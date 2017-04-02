@@ -52,9 +52,9 @@
                ;; production. You can build this with:
                ;; lein cljsbuild once min
                {:id "min"
-                :source-paths ["src"]
-                :compiler {:output-to "resources/public/js/compiled/relajso.js"
-                           :main relajso.core
+                :source-paths ["src" "test"]
+                :compiler {:output-to "resources/public/js/compiled/pokedex.js"
+                           :main pokedex.core
                            :optimizations :advanced
                            :pseudo-names false
                            :pretty-print false}}]}
