@@ -1,0 +1,19 @@
+{
+  "name": "bs-relay",
+  "version": "1.0.0",
+  "description": "FIXME: Write a one-line description of your library/project.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "babel-core": "^6.24.0",
+    "react-relay": "^0.10.0",
+    "babel-relay-plugin": "^0.10.0",
+    "graphql": "^0.9.1",
+    "graphql-to-json": "^1.1.2",
+    "node-fetch": "^1.6.3"
+  }
+}
