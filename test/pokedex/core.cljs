@@ -1,21 +1,16 @@
 (ns pokedex.core
   (:require [relajso.core :as r]
+            [pokedex.history :refer [history]]
             [sablono.core :refer-macros [html]]
             [secretary.core :as secretary :refer-macros [defroute]]
             [goog.object :as obj]
             [goog.events :as events]
-            [goog.history.EventType :as EventType])
-  (:import goog.History))
+            [goog.history.EventType :as EventType]))
 
 (enable-console-print!)
 
 (defonce application
   (.getElementById js/document "app"))
-
-(defonce history
-  (let [history (History.)]
-    (goog.events/listen history EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
-    history))
 
 (defonce network
   (r/setup-network "https://api.graph.cool/relay/v1/cj0xkx3zbzxk401189kz2gqcj"))
