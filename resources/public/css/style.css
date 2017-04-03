@@ -9,74 +9,8 @@ body {
   font-family: 'Open Sans', sans-serif;
 }
 
-/* ListPage.css */
-
-.list-page-root {
-  background-color: #F2F2F2;
-  min-height: 100vh;
-}
-
-.list-page-title {
-  color: #7F7F7F;
-  font-size: 32px;
-  text-align: center;
-  padding-top: 120px;
-  padding-bottom: 50px;
-  font-weight: 300;
-}
-
-.list-page-container {
-  margin-left: 130px;
-  margin-right: 130px;
-  justify-content: center;
-  /*align-content: stretch;*/
-  display:flex;
-  flex-wrap: wrap;
-  align-items: stretch;
-}
-
-/* PokemonPreview.css */
-
-.preview-page {
-  background-color: white;
-  border-radius: 3px;
-  box-shadow: 0 2px 8px 0 rgba(0,0,0,0.25);
-  width: 180px;
-  cursor: pointer;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 20px;
-  box-sizing: border-box;
-  /*height: 100%;*/
-  transition: transform .2s ease, box-shadow .2s ease;
-  backface-visibility: hidden;
-}
-
-.preview-img {
-  height: auto;
-  display: block;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.preview-page:hover{
+/* TODO: Inline? */
+.preview-root:hover{
   transform: scale(1.05);
   box-shadow: 0 4px 14px 0 rgba(0,0,0,0.15);
-}
-
-.preview-name {
-  text-align: center;
-  color: #7F7F7F;
-  font-size: 24px;
-  user-select: none;
-  font-weight: 300;
-  padding: 20px 0 0;
-}
-
-.link {
-  position: relative;
-  text-decoration: none;
-  padding: 10px;
-  display: flex;
 }

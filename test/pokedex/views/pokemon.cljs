@@ -1,6 +1,20 @@
 (ns pokedex.views.pokemon
   (:require [relajso.core :as r]
+            [garden.core :refer [style]]
             [sablono.core :refer-macros [html]]))
+
+(def root-style
+  {:align-items "center"
+   :background-color "#F1F1F1"
+   :display "flex"
+   :height "100vh"
+   :justify-content "center"
+   :width "100vw"})
+
+(def content-style
+  {:width "350px"
+   :display "flex"
+   :flex-direction "column"})
 
 (r/defui Page
   static IFragments
@@ -26,5 +40,6 @@
   Object
   (render [this]
     (html
-     [:div.list-page-root
-      "POKEMON"])))
+     [:div {:style root-style}
+      [:div {:style content-style}
+       "POKEMON"]])))
