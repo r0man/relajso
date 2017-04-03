@@ -14,8 +14,7 @@
                  [cljsjs/react-relay "0.10.0-0"]
                  [me.raynes/conch "0.8.0"]
                  [org.clojure/core.async "0.3.426"
-                  :exclusions [org.clojure/tools.reader]]
-                 [org.omcljs/om "1.0.0-alpha48"]]
+                  :exclusions [org.clojure/tools.reader]]]
 
   :plugins [[lein-figwheel "0.5.9"]
             [lein-cljsbuild "1.1.5" :exclusions [[org.clojure/clojure]]]]
@@ -104,8 +103,6 @@
   :profiles {:dev {:dependencies [[binaryage/devtools "0.9.2"]
                                   [com.cemerick/piggieback "0.2.1"]
                                   [figwheel-sidecar "0.5.9"]
-                                  [garden "1.3.2"]
-                                  [org.omcljs/om "1.0.0-alpha48"]
                                   [secretary "1.2.3"]]
                    ;; need to add dev source path here to get user.clj loaded
                    :source-paths ["src" "dev"]
