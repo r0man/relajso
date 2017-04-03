@@ -12,6 +12,11 @@
 (defonce application
   (.getElementById js/document "app"))
 
+(defonce history
+  (let [history (History.)]
+    (goog.events/listen history EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+    history))
+
 (defonce network
   (r/setup-network "https://api.graph.cool/relay/v1/cj0xkx3zbzxk401189kz2gqcj"))
 
@@ -24,7 +29,7 @@
     (let [path (str "#/view/" (r/get this :props :pokemon :id))]
       (html
        [:div.preview-page
-        {:on-click #(secretary/dispatch! path)}
+        {:on-click #(.setToken history path)}
         (when-let [src (r/get this :props :pokemon :url)]
           [:img.preview-img
            {:alt "Pokemon Image"
@@ -113,11 +118,13 @@
 
 ;; (change-route ListPage viewer-queries)
 
-(defonce history
-  (let [history (History.)]
-    (goog.events/listen history EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
-    (.setEnabled history true)
-    history))
+;; (defonce history
+;;   (let [history (History.)]
+;;     (goog.events/listen history EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
+;;     (.setEnabled history true)
+;;     history))
 
 ;; (defn on-js-reload []
 ;;   (prn "Reloaded!"))
+
+(.setEnabled history true)
