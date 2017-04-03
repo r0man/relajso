@@ -6,16 +6,18 @@
 (enable-console-print!)
 
 (defprotocol IFragments
-  (fragments [this] "Return the component's data requirements using
-  fragments."))
+  (fragments [this]
+    "Return the component's data requirements using fragments."))
 
-(defprotocol IInitVars
-  (init-vars [this] "Return the initial set of variable values
-  available to this component's fragments."))
+(defprotocol IInitialVariables
+  (initial-variables [this]
+    "Return the initial set of variable values available to this
+    component's fragments."))
 
-(defprotocol IPrepareVars
-  (prepare-vars [this] "A method to modify the variables based on the
-  runtime environment or previous variable values."))
+(defprotocol IPrepareVariables
+  (prepare-variables [this prev-vars]
+    "A method to modify the variables based on the runtime environment
+    or previous variable values."))
 
 (defn get [obj & ks]
   (apply obj/getValueByKeys obj (map name ks)))

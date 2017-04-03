@@ -137,3 +137,33 @@
 
 (defmacro defui [& form]
   (defui* (cons 'defui form) &env))
+
+
+;; (defn- filter-protocol
+;;   [ast protocol]
+;;   (->> (:methods ast)
+;;        (map second)
+;;        (filter #(= (:protocol %) protocol))))
+
+;; (defn- find-protocol [ast protocol]
+;;   (last (filter-protocol ast protocol)))
+
+;; (defn- find-method [ast protocol method]
+;;   (when-let [{:keys [methods]} (find-protocol ast 'IFragments)]
+;;     (last (filter #(= (:name %) method) methods))))
+
+;; (defn compile-fragments
+;;   [ast]
+;;   (let [{:keys [static protocol methods]}
+;;         (last (filter-protocol ast 'IFragments))
+;;         method (last (filter #(= (:name %) 'fragments) methods))]
+;;     `(fn ~(:args method) ~@(:body method))))
+
+;; (defn compile-initial-variables
+;;   [ast class]
+;;   (when-let [method (find-method protocol 'IInitialVariables 'initial-variables)]
+;;     (prn method)
+;;     `(cljs.core/clj->js
+;;       ((fn ~(:args method)
+;;          ~@(:body method))
+;;        ~class))))
