@@ -1,6 +1,6 @@
 (ns pokedex.views.pokemon
-  (:require [relajso.core :as r]
-            [garden.core :refer [style]]
+  (:require [pokedex.components.card :as card]
+            [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
 (def root-style
@@ -42,4 +42,7 @@
     (html
      [:div {:style root-style}
       [:div {:style content-style}
-       "POKEMON"]])))
+       ;; TODO: Populate state
+       (->> #js {:name (r/get this :state :name)
+                 :url (r/get this :state :url)}
+            (js/React.createElement card/Card))]])))
