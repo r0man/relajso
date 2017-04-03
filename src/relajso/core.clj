@@ -76,13 +76,43 @@
        (map second)
        (filter #(= (:protocol %) protocol))))
 
+(defn- filter-protocol
+  [ast protocol]
+  (->> (:methods ast)
+       (map second)
+       (filter #(= (:protocol %) protocol))))
+
+(defn- find-protocol [ast protocol]
+  (last (filter-protocol ast protocol)))
+
+(defn- find-method [ast protocol method]
+  (when-let [{:keys [methods]} (find-protocol ast protocol)]
+    (last (filter #(= (:name %) method) methods))))
+
 (defn compile-fragments
-  [ast]
-  (let [{:keys [static protocol methods]}
-        (last (filter-protocol ast 'IFragments))
-        method (last (filter #(= (:name %) 'fragments) methods))]
-    `(fn ~(:name method) ~(:args method) ~@(:body method))
-    `(fn ~(:args method) ~@(:body method))))
+  [ast class]
+  (when-let [method (find-method ast 'IFragments 'fragments)]
+    `(cljs.core/clj->js
+      ((fn ~(:args method)
+         ~@(:body method))
+       ~class))))
+
+(defn compile-initial-variables
+  [ast class]
+  (when-let [method (find-method ast 'IInitialVariables 'initial-variables)]
+    `(cljs.core/clj->js
+      ((fn ~(:args method)
+         ~@(:body method))
+       ~class))))
+
+(defn compile-prepare-variables
+  [ast class]
+  (when-let [method (find-method ast 'IPrepareVariables 'prepare-variables)]
+    `(fn [previous-variables#]
+       (cljs.core/clj->js
+        ((fn ~(:args method)
+           ~@(:body method))
+         ~class (cljs.core/js->clj previous-variables#))))))
 
 (defn defui*
   ([form]
@@ -133,37 +163,11 @@
            ~react-class
            (cljs.core/js-obj
             "fragments"
-            (cljs.core/clj->js (~(compile-fragments ast) ~react-class)))))))))
+            ~(compile-fragments ast react-class)
+            "initialVariables"
+            ~(compile-initial-variables ast react-class)
+            "prepareVariables"
+            ~(compile-prepare-variables ast react-class))))))))
 
 (defmacro defui [& form]
   (defui* (cons 'defui form) &env))
-
-
-;; (defn- filter-protocol
-;;   [ast protocol]
-;;   (->> (:methods ast)
-;;        (map second)
-;;        (filter #(= (:protocol %) protocol))))
-
-;; (defn- find-protocol [ast protocol]
-;;   (last (filter-protocol ast protocol)))
-
-;; (defn- find-method [ast protocol method]
-;;   (when-let [{:keys [methods]} (find-protocol ast 'IFragments)]
-;;     (last (filter #(= (:name %) method) methods))))
-
-;; (defn compile-fragments
-;;   [ast]
-;;   (let [{:keys [static protocol methods]}
-;;         (last (filter-protocol ast 'IFragments))
-;;         method (last (filter #(= (:name %) 'fragments) methods))]
-;;     `(fn ~(:args method) ~@(:body method))))
-
-;; (defn compile-initial-variables
-;;   [ast class]
-;;   (when-let [method (find-method protocol 'IInitialVariables 'initial-variables)]
-;;     (prn method)
-;;     `(cljs.core/clj->js
-;;       ((fn ~(:args method)
-;;          ~@(:body method))
-;;        ~class))))

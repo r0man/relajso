@@ -73,12 +73,14 @@
                  url } }")})
   static IInitialVariables
   (initial-variables [this]
+    (prn "IInitialVariables")
     {:id nil :pokemonExists false})
 
   static IPrepareVariables
   (prepare-variables [this prev-vars]
-    (obj/set prev vars "pokemonExists" (some? (obj/get prev-vars "pokemonExists")))
-    prev-vars)
+    (prn "IPrepareVariables")
+    (prn prev-vars)
+    (update prev-vars :pokemonExists some?))
 
   Object
   (render [this]
