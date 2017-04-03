@@ -1,6 +1,7 @@
 (ns pokedex.core
   (:require [relajso.core :as r]
             [pokedex.history :refer [history]]
+            [pokedex.components.preview :as preview]
             [sablono.core :refer-macros [html]]
             [secretary.core :as secretary :refer-macros [defroute]]
             [goog.object :as obj]
@@ -15,23 +16,6 @@
 (defonce network
   (r/setup-network "https://api.graph.cool/relay/v1/cj0xkx3zbzxk401189kz2gqcj"))
 
-(r/defui PokemonPreview
-  static IFragments
-  (fragments [this]
-    {:pokemon #(r/ql "fragment on Pokemon { id name url }")})
-  Object
-  (render [this]
-    (let [path (str "#/view/" (r/get this :props :pokemon :id))]
-      (html
-       [:div.preview-page
-        {:on-click #(.setToken history path)}
-        (when-let [src (r/get this :props :pokemon :url)]
-          [:img.preview-img
-           {:alt "Pokemon Image"
-            :src src}])
-        [:div.preview-name
-         (r/get this :props :pokemon :name)]]))))
-
 (r/defui ListPage
   static IFragments
   (fragments [this]
@@ -40,7 +24,7 @@
                allPokemons (first: 1000) {
                  edges {
                    node {
-                     ${pokedex.core.PokemonPreview.getFragment(\"pokemon\")}
+                     ${pokedex.components.preview.Pokemon.getFragment(\"pokemon\")}
                      id
                    }
                  }
@@ -59,7 +43,7 @@
        (for [edge (r/get this :props :viewer :allPokemons :edges)]
          (->> #js{:key (r/get edge :node :id)
                   :pokemon (r/get edge :node)}
-              (js/React.createElement PokemonPreview)))]])))
+              (js/React.createElement preview/Pokemon)))]])))
 
 (r/defui PokemonPage
   static IFragments
