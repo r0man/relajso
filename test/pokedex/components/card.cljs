@@ -57,7 +57,7 @@
        [:input
         {:style input-style
          :placeholder "Type a name..."
-         :value (r/get this :props :value)
+         :value (r/get this :props :name)
          :on-change #(prn "TODO on-change")}]]
 
       [:div {:style image-container-style}

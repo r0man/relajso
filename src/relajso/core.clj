@@ -127,7 +127,9 @@
        (cljs.core/clj->js
         ((fn ~(:args method)
            ~@(:body method))
-         ~class (cljs.core/js->clj previous-variables#))))))
+         ~class (cljs.core/js->clj
+                 previous-variables#
+                 :keywordize-keys true))))))
 
 (defn defui*
   ([form]

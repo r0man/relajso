@@ -31,15 +31,17 @@
     {:id nil :pokemonExists false})
 
   static r/IPrepareVariables
-  (prepare-variables [this prev-vars]
-    (update prev-vars :pokemonExists some?))
+  (prepare-variables [this {:keys [id] :as prev-vars}]
+    (assoc prev-vars :pokemonExists (some? id)))
 
   Object
+  (initLocalState [this]
+    #js {:name (r/get this :props :viewer :Pokemon :name)
+         :url (r/get this :props :viewer :Pokemon :url)})
   (render [this]
     (html
      [:div {:style root-style}
       [:div {:style content-style}
-       ;; TODO: Populate state
        (->> #js {:name (r/get this :state :name)
                  :url (r/get this :state :url)}
             (js/React.createElement card/Card))]])))
