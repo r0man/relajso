@@ -14,14 +14,23 @@
    (js/React.createElement js/Relay.RootContainer #js {:Component component :route route})
    application))
 
+(def viewer-query
+  #js {:viewer #(r/ql "query { viewer }")})
+
 (defroute list-page-path "/" []
   (->> #js {:name "List Page Route"
             :params #js {}
-            :queries #js {:viewer #(r/ql "query { viewer }")}}
+            :queries viewer-query}
        (change-route list/Page)))
+
+(defroute create-page-path "/create" []
+  (->> #js {:name "Create Page Route"
+            :params #js {}
+            :queries viewer-query}
+       (change-route pokemon/Page)))
 
 (defroute pokemon-page-path "/view/:id" [id]
   (->> #js {:name "Pokemon Page Route"
             :params #js {:id id}
-            :queries #js {:viewer #(r/ql "query { viewer }")}}
+            :queries viewer-query}
        (change-route pokemon/Page)))
