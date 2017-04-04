@@ -1,5 +1,6 @@
 (ns pokedex.views.list
-  (:require [pokedex.components.preview :as preview]
+  (:require [pokedex.components.add-new :as add-new]
+            [pokedex.components.preview :as preview]
             [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
@@ -50,4 +51,5 @@
        (for [edge (r/get this :props :viewer :allPokemons :edges)]
          (->> #js{:key (r/get edge :node :id)
                   :pokemon (r/get edge :node)}
-              (js/React.createElement preview/Pokemon)))]])))
+              (js/React.createElement preview/Pokemon)))
+       (js/React.createElement add-new/AddNew)]])))
