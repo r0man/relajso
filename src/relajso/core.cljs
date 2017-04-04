@@ -1,5 +1,6 @@
 (ns relajso.core
   (:refer-clojure :exclude [get])
+  (:require-macros relajso.core)
   (:require [cljsjs.react-relay]
             [goog.object :as obj]))
 
