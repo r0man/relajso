@@ -32,7 +32,7 @@
    :user-select "none"})
 
 (r/defui Pokemon
-  static IFragments
+  static r/IFragments
   (fragments [this]
     {:pokemon #(r/ql "fragment on Pokemon { id name url }")})
   Object

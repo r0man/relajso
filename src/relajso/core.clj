@@ -1,5 +1,6 @@
 (ns relajso.core
   (:require [cljs.analyzer :as ana]
+            [cljs.util :as cljs-util]
             [cljs.core :refer [js-arguments specify! this-as]]
             [clojure.java.io :as io]
             [clojure.spec :as s]
@@ -70,44 +71,58 @@
              code))
           nil (protocol-methods ast)))
 
-(defn filter-protocol
-  [ast protocol]
+(defn- find-protocol
+  [env ast protocol]
   (->> (:methods ast)
        (map second)
-       (filter #(= (:protocol %) protocol))))
+       (filter (fn [ast]
+                 ;; TODO: What do to when env is not available? At
+                 ;; macro expansion time, for example.
+                 (some-> env
+                         (dissoc :locals)
+                         (ana/resolve-var (:protocol ast))
+                         (:name)
+                         (= protocol))))
+       (last)))
 
-(defn- filter-protocol
-  [ast protocol]
-  (->> (:methods ast)
-       (map second)
-       (filter #(= (:protocol %) protocol))))
-
-(defn- find-protocol [ast protocol]
-  (last (filter-protocol ast protocol)))
-
-(defn- find-method [ast protocol method]
-  (when-let [{:keys [methods]} (find-protocol ast protocol)]
+(defn- find-method [env ast protocol method]
+  (when-let [{:keys [methods]} (find-protocol env ast protocol)]
     (last (filter #(= (:name %) method) methods))))
 
-(defn compile-fragments
-  [ast class]
-  (when-let [method (find-method ast 'IFragments 'fragments)]
+;; Fragments
+
+(defn- find-fragments [env ast]
+  (find-method env ast 'relajso.core/IFragments 'fragments))
+
+(defn- compile-fragments
+  [env ast class]
+  (when-let [method (find-fragments env ast)]
     `(cljs.core/clj->js
       ((fn ~(:args method)
          ~@(:body method))
        ~class))))
 
-(defn compile-initial-variables
-  [ast class]
-  (when-let [method (find-method ast 'IInitialVariables 'initial-variables)]
+;; Initial Variables
+
+(defn- find-initial-variables [env ast]
+  (find-method env ast 'relajso.core/IInitialVariables 'initial-variables))
+
+(defn- compile-initial-variables
+  [env ast class]
+  (when-let [method (find-initial-variables env ast)]
     `(cljs.core/clj->js
       ((fn ~(:args method)
          ~@(:body method))
        ~class))))
 
-(defn compile-prepare-variables
-  [ast class]
-  (when-let [method (find-method ast 'IPrepareVariables 'prepare-variables)]
+;; Prepare Variables
+
+(defn- find-prepare-variables [env ast]
+  (find-method env ast 'relajso.core/IPrepareVariables 'prepare-variables))
+
+(defn- compile-prepare-variables
+  [env ast class]
+  (when-let [method (find-prepare-variables env ast)]
     `(fn [previous-variables#]
        (cljs.core/clj->js
         ((fn ~(:args method)
@@ -163,11 +178,11 @@
            ~react-class
            (cljs.core/js-obj
             "fragments"
-            ~(compile-fragments ast react-class)
+            ~(compile-fragments env ast react-class)
             "initialVariables"
-            ~(compile-initial-variables ast react-class)
+            ~(compile-initial-variables env ast react-class)
             "prepareVariables"
-            ~(compile-prepare-variables ast react-class))))))))
+            ~(compile-prepare-variables env ast react-class))))))))
 
 (defmacro defui [& form]
   (defui* (cons 'defui form) &env))

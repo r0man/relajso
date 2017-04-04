@@ -45,7 +45,7 @@
    :width "100%"})
 
 (r/defui Card
-  static IFragments
+  static r/IFragments
   (fragments [this]
     {})
   Object

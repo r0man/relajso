@@ -24,7 +24,7 @@
    :margin-right "130px"})
 
 (r/defui Page
-  static IFragments
+  static r/IFragments
   (fragments [this]
     {:viewer
      #(r/ql "fragment on Viewer {

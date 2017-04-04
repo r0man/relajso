@@ -17,7 +17,7 @@
    :flex-direction "column"})
 
 (r/defui Page
-  static IFragments
+  static r/IFragments
   (fragments [this]
     {:viewer
      #(r/ql "fragment on Viewer {
@@ -26,11 +26,11 @@
                  id
                  name
                  url } }")})
-  static IInitialVariables
+  static r/IInitialVariables
   (initial-variables [this]
     {:id nil :pokemonExists false})
 
-  static IPrepareVariables
+  static r/IPrepareVariables
   (prepare-variables [this prev-vars]
     (update prev-vars :pokemonExists some?))
 
