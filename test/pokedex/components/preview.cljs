@@ -37,7 +37,7 @@
     {:pokemon #(r/ql "fragment on Pokemon { id name url }")})
   Object
   (render [this]
-    (let [path (str "#/view/" (r/get this :props :pokemon :id))]
+    (let [path (str "/view/" (r/get this :props :pokemon :id))]
       (html
        [:div.preview-root
         {:on-click #(.setToken history path)
