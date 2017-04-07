@@ -11,10 +11,44 @@
    :justify-content "center"
    :width "100vw"})
 
+(def action-button-container-style
+  {:display "flex"
+   :flex-direction "row"
+   :justify-content "space-between"})
+
+(defn delete-icon-url
+  "http://demo.learnrelay.org/1b90b8ddb503641e94661b0a016a75e8.svg")
+
+(def delete-icon-style
+  {:height "18px"
+   :padding "10px"
+   :cursor "hand"
+   :cursor "pointer"})
+
+(def button-container-style
+  {:align-items "center"
+   :display "flex"
+   :flex "0 0 auto"
+   :flex-direction "row"
+   :justify-content "space-between"
+   :margin "25px 0"})
+
 (def content-style
   {:width "350px"
    :display "flex"
    :flex-direction "column"})
+
+(defn add-new? [this]
+  (r/get this :props :params :id))
+
+(defn add-pokemon! [this]
+  (prn "TODO: add pokemon"))
+
+(defn update-pokemon! [this]
+  (prn "TODO: update pokemon"))
+
+(defn delete-pokemon! [this]
+  (prn "TODO: delete pokemon"))
 
 (r/defui Page
   static r/IFragments
@@ -44,4 +78,11 @@
       [:div {:style content-style}
        (->> #js {:name (r/get this :state :name)
                  :url (r/get this :state :url)}
-            (js/React.createElement card/Card))]])))
+            (js/React.createElement card/Card))
+       [:div {:style button-container-style}
+        [:div
+         (when-not (add-new? this)
+           [:img
+            {:class delete-icon-style
+             :src delete-icon-url}])]
+        [:div {:style action-button-container}]]]])))
