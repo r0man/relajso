@@ -16,7 +16,7 @@
    :flex-direction "row"
    :justify-content "space-between"})
 
-(defn delete-icon-url
+(def delete-icon-url
   "http://demo.learnrelay.org/1b90b8ddb503641e94661b0a016a75e8.svg")
 
 (def delete-icon-style
