@@ -1,41 +1,17 @@
 (ns relajso.core
   (:require [cljs.analyzer :as ana]
-            [cljs.util :as cljs-util]
             [cljs.core :refer [js-arguments specify! this-as]]
-            [clojure.java.io :as io]
             [clojure.spec :as s]
-            [clojure.string :as str]
-            [me.raynes.conch :as conch]
-            [relajso.specs :as specs]))
+            [inflections.core :refer [hyphenate]]
+            [relajso.compiler :as compiler]
+            [relajso.specs :as specs])
+  (:import cljs.tagged_literals.JSValue))
 
-(defn- trim-newline [s]
-  (str/replace s #"\r\n|\n|\r" " "))
-
-(defn- ql* [env query]
-  (let [filename (-> env :ns :name)
-        {:keys [line column]} env
-        code (str  "/* " filename " " line " " column "*/" ; unique key for every query
-                   "Relay.QL`" (trim-newline query) "`;")
-        schema (-> "schema.json" io/resource slurp) ; GraphQL schema from introspection query
-        script (str "var schema = " schema ";"
-                    "var schemaData = schema.data;"
-                    "var getBabelRelayPlugin = require('babel-relay-plugin');"
-                    "var babel = require('babel-core');"
-                    "var code = '" code "';"
-                    "var options = {};"
-                    "options.plugins = [getBabelRelayPlugin(schemaData)];"
-                    "options.filename = '" filename "';"
-                    "options.compact = true;"
-                    "options.comments = false;"
-                    "babel.transform(code, options).code;")]
-    (try (conch/execute "node" "--print" {:in script})
-         (catch Exception e
-           (println (-> e ex-data :stderr))
-           (throw (ex-info (str "Can't parse GraphQL fragment: " (.getMessage e))
-                           (ex-data e)))))))
-
-(defmacro ql [^String query]
-  `(js/eval ~(ql* &env query)))
+(defn compile-document
+  "Compile the GraphQL `document` using `schema`. Saves the compiled
+  document in `cache` and returns it."
+  [compiler schema cache document]
+  (compiler/compile-document compiler schema cache document))
 
 (defn conform!
   "Like `clojure.spec/conform`, but raises an exception if `data`
@@ -62,7 +38,32 @@
        (filter #(= (first %) :protocol))
        (map second)))
 
-(defn compile-protocol-methods [ast]
+(defn- find-protocol
+  [env ast protocol]
+  (->> (:methods ast)
+       (map second)
+       (filter (fn [ast]
+                 ;; TODO: What do to when env is not available? At
+                 ;; macro expansion time, for example.
+                 (or (= (:protocol ast) protocol)
+                     (some-> env
+                             (dissoc :locals)
+                             (ana/resolve-var (:protocol ast))
+                             (:name)
+                             (= protocol)))))
+       (last)))
+
+(defn- find-method [env ast protocol method]
+  (when-let [{:keys [methods]} (find-protocol env ast protocol)]
+    (last (filter #(= (:name %) method) methods))))
+
+;; defcomponent
+
+(defn- emit-factory-fn [ast]
+  `(defn ~(hyphenate (:name ast)) [~'props]
+     (js/React.createElement ~(:name ast) ~'props)))
+
+(defn- emit-prototype-methods [ast]
   (reduce (fn [code {:keys [protocol methods]}]
             (concat
              `(~protocol
@@ -71,79 +72,21 @@
              code))
           nil (protocol-methods ast)))
 
-(defn- find-protocol
-  [env ast protocol]
-  (->> (:methods ast)
-       (map second)
-       (filter (fn [ast]
-                 ;; TODO: What do to when env is not available? At
-                 ;; macro expansion time, for example.
-                 (some-> env
-                         (dissoc :locals)
-                         (ana/resolve-var (:protocol ast))
-                         (:name)
-                         (= protocol))))
-       (last)))
+(defn- emit-context-types [ast]
+  `(set! (.-contextTypes ~(:name ast)) ~'relajso.core/relay-context-types))
 
-(defn- find-method [env ast protocol method]
-  (when-let [{:keys [methods]} (find-protocol env ast protocol)]
-    (last (filter #(= (:name %) method) methods))))
-
-;; Fragments
-
-(defn- find-fragments [env ast]
-  (find-method env ast 'relajso.core/IFragments 'fragments))
-
-(defn- compile-fragments
-  [env ast class]
-  (when-let [method (find-fragments env ast)]
-    `(cljs.core/clj->js
-      ((fn ~(:args method)
-         ~@(:body method))
-       ~class))))
-
-;; Initial Variables
-
-(defn- find-initial-variables [env ast]
-  (find-method env ast 'relajso.core/IInitialVariables 'initial-variables))
-
-(defn- compile-initial-variables
-  [env ast class]
-  (when-let [method (find-initial-variables env ast)]
-    `(cljs.core/clj->js
-      ((fn ~(:args method)
-         ~@(:body method))
-       ~class))))
-
-;; Prepare Variables
-
-(defn- find-prepare-variables [env ast]
-  (find-method env ast 'relajso.core/IPrepareVariables 'prepare-variables))
-
-(defn- compile-prepare-variables
-  [env ast class]
-  (when-let [method (find-prepare-variables env ast)]
-    `(fn [previous-variables#]
-       (cljs.core/clj->js
-        ((fn ~(:args method)
-           ~@(:body method))
-         ~class (cljs.core/js->clj
-                 previous-variables#
-                 :keywordize-keys true))))))
-
-(defn defui*
-  ([form]
-   (defui* form nil))
-  ([form env]
-   (let [ast (parse-ui form)
-         react-class (symbol (str (:name ast) "React"))
-         relay-class (:name ast)
+(defn defcomponent*
+  ([class-sym methods]
+   (defcomponent* nil class-sym methods))
+  ([env class-sym methods]
+   (let [methods (conform! ::specs/defui-method-list methods)
+         ast {:name class-sym :methods methods}
          rname (if env
-                 (:name (ana/resolve-var (dissoc env :locals) react-class))
-                 react-class)
-         ctor  `(defn ~(with-meta react-class
+                 (:name (ana/resolve-var (dissoc env :locals) class-sym))
+                 class-sym)
+         ctor  `(defn ~(with-meta class-sym
                          (merge {:jsdoc ["@constructor"]}
-                                (meta react-class)
+                                (meta class-sym)
                                 (when (:doc ast)
                                   {:doc (:doc ast)})))
                   []
@@ -153,38 +96,80 @@
                       (set! (.-state this#) (.initLocalState this#))
                       (set! (.-state this#) (cljs.core/js-obj)))
                     this#))
-         set-react-proto! `(set! (.-prototype ~react-class)
+         set-react-proto! `(set! (.-prototype ~class-sym)
                                  (goog.object/clone js/React.Component.prototype))
          ctor  (if (-> ast :name meta :once)
-                 `(when-not (cljs.core/exists? ~react-class)
+                 `(when-not (cljs.core/exists? ~class-sym)
                     ~ctor
                     ~set-react-proto!)
                  `(do
                     ~ctor
                     ~set-react-proto!))
          display-name (if env
-                        (str (-> env :ns :name) "/" react-class)
+                        (str (-> env :ns :name) "/" class-sym)
                         'js/undefined)]
      `(do
         ~ctor
-        (specify! (.-prototype ~react-class) ~@(compile-protocol-methods ast))
-        (set! (.. ~react-class -prototype -constructor) ~react-class)
-        (set! (.. ~react-class -prototype -constructor -displayName) ~display-name)
+        (specify! (.-prototype ~class-sym) ~@(emit-prototype-methods ast))
+        (set! (.. ~class-sym -prototype -constructor) ~class-sym)
+        (set! (.. ~class-sym -prototype -constructor -displayName) ~display-name)
         (set! (.-cljs$lang$type ~rname) true)
         (set! (.-cljs$lang$ctorStr ~rname) ~(str rname))
         (set! (.-cljs$lang$ctorPrWriter ~rname)
               (fn [this# writer# opt#]
                 (cljs.core/-write writer# ~(str rname))))
-        (def ~(with-meta relay-class {:export true})
-          (js/Relay.createContainer
-           ~react-class
-           (cljs.core/js-obj
-            "fragments"
-            ~(compile-fragments env ast react-class)
-            "initialVariables"
-            ~(compile-initial-variables env ast react-class)
-            "prepareVariables"
-            ~(compile-prepare-variables env ast react-class))))))))
+        ~(emit-context-types ast)
+        ~(emit-factory-fn ast)))))
 
-(defmacro defui [& form]
-  (defui* (cons 'defui form) &env))
+(defmacro defcomponent
+  "Define a React component."
+  [name & methods]
+  (defcomponent* &env name methods))
+
+(defn- emit-fragment-container
+  "Emit a Relay fragment container."
+  [env ast]
+  (when-let [method (find-method env ast 'relajso.core/IFragments 'fragments)]
+    `(do (def ~(:name ast)
+           (js/ReactRelay.createFragmentContainer
+            ~(:react-sym ast)
+            ((fn ~(:args method)
+               ~@(:body method))
+             ~(:react-sym ast))))
+         (defn ~(hyphenate (:name ast)) [~'props]
+           (js/React.createElement ~(:name ast) ~'props)))))
+
+(defn- emit-query-renderer
+  "Emit a Relay query renderer."
+  [env ast]
+  (when-let [method (find-method env ast 'relajso.core/IQueryRenderer 'query)]
+    `(defn ~(hyphenate (:name ast))
+       [{:keys [~'env ~'vars]}]
+       (js/React.createElement
+        js/ReactRelay.QueryRenderer
+        ~(JSValue. `{:environment ~'env
+                     :variables ~'vars
+                     :render #(js/React.createElement ~(:react-sym ast) %)
+                     :query ((fn ~(:args method)
+                               ~@(:body method))
+                             ~(:react-sym ast))})))))
+
+;; defui
+
+(defn defui*
+  "Define a Relay component."
+  ([form]
+   (defui* nil name methods))
+  ([env class-sym methods]
+   (let [react-sym (symbol (str "React" class-sym ))
+         ast {:name class-sym
+              :react-sym react-sym
+              :methods (conform! ::specs/defui-method-list methods)}]
+     `(do (relajso.core/defcomponent ~react-sym ~@methods)
+          ~(emit-fragment-container env ast)
+          ~(emit-query-renderer env ast)))))
+
+(defmacro defui
+  "Define a Relay component."
+  [class-sym & methods]
+  (defui* &env class-sym methods))
