@@ -36,10 +36,7 @@
    :user-select "none"
    :font-weight "300"})
 
-(r/defui AddNew
-  static r/IFragments
-  (fragments [this]
-    {})
+(r/defcomponent AddNew
   Object
   (render [this]
     (html

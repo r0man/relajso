@@ -1,4 +1,5 @@
 (ns pokedex.components.preview
+  (:require-macros [pokedex.schema :refer [graphql]])
   (:require [pokedex.history :refer [history]]
             [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
@@ -31,10 +32,13 @@
    :text-align "center"
    :user-select "none"})
 
+(def pokemon-fragment
+  (graphql "fragment Pokemon on Pokemon { id name url }"))
+
 (r/defui Pokemon
   static r/IFragments
   (fragments [this]
-    {:pokemon #(r/ql "fragment on Pokemon { id name url }")})
+    #js {:pokemon pokemon-fragment})
   Object
   (render [this]
     (let [path (str "/view/" (r/get this :props :pokemon :id))]

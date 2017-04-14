@@ -1,7 +1,7 @@
 {
-  "name": "relajso",
+  "name": "relajso-pokedex",
   "version": "1.0.0",
-  "description": "FIXME: Write a one-line description of your library/project.",
+  "description": "Relajso Pokedex example.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -15,7 +15,8 @@
     "get-stdin": "^5.0.1",
     "node-fetch": "^1.6.3",
     "readline-sync": "^1.4.7",
-    "relay-compiler": "^1.0.0-a"
+    "relay-compiler": "^1.0.0-a",
+    "relay-runtime": "^1.0.0-a"
   },
   "devDependencies": {
     "babel-cli": "^6.24.1",

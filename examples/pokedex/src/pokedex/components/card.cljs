@@ -24,7 +24,10 @@
    :margin-bottom "2px"})
 
 (def input-style
-  {:font-family "'Open Sans', sans-serif"})
+  {:font-family "'Open Sans', sans-serif"
+   :width "95%"
+   :margin-top "5px"
+   :padding "5px"})
 
 (def image-container-style
   {:display "flex"
@@ -44,10 +47,11 @@
    :max-width "100%"
    :width "100%"})
 
-(r/defui Card
-  static r/IFragments
-  (fragments [this]
-    {})
+(defn- on-change [this handler]
+  (when-let [handler (r/get this :props handler)]
+    #(handler (r/get % :target :value))))
+
+(r/defcomponent Card
   Object
   (render [this]
     (html
@@ -58,17 +62,17 @@
         {:style input-style
          :placeholder "Type a name..."
          :value (r/get this :props :name)
-         :on-change #(prn "TODO on-change")}]]
+         :on-change (on-change this :on-name-change)}]]
 
       [:div {:style image-container-style}
 
        [:div {:style header-style}
         [:div {:style title-style} "IMAGE URL"]
         [:input
-         {;; :style input-style
+         {:style input-style
           :placeholder "A link to Pokemons's image"
           :value (r/get this :props :url)
-          :on-change #(prn "TODO on-change")}]]
+          :on-change (on-change this :on-url-change)}]]
 
        [:div {:style card-image-wrapper-style}
         [:img

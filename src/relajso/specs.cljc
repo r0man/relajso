@@ -24,8 +24,11 @@
   (s/alt :static ::defui-static-methods
          :protocol ::defui-protocol-methods))
 
+(s/def ::defui-method-list
+  (s/* ::defui-methods))
+
 (s/def ::defui
   (s/cat :defui #(= 'defui %)
          :name symbol?
          :doc (s/? string?)
-         :methods (s/* ::defui-methods)))
+         :methods ::defui-method-list))
