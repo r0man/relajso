@@ -8,3 +8,6 @@
   (let [history (History.)]
     (goog.events/listen history EventType/NAVIGATE #(secretary/dispatch! (.-token %)))
     history))
+
+(defn go-to [path]
+  (.setToken history path))

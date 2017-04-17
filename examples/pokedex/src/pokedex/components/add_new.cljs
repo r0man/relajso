@@ -1,5 +1,5 @@
 (ns pokedex.components.add-new
-  (:require [pokedex.history :refer [history]]
+  (:require [pokedex.history :as history]
             [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
@@ -41,7 +41,7 @@
   (render [this]
     (html
      [:div
-      {:on-click #(.setToken history "/create")
+      {:on-click #(history/go-to "/create")
        :style link-style}
       [:div {:style root-style}
        [:div {:style plus-style} "+"]
