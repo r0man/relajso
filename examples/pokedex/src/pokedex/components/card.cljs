@@ -1,6 +1,5 @@
 (ns pokedex.components.card
-  (:require [pokedex.history :refer [history]]
-            [relajso.core :as r]
+  (:require [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
 (def root-style

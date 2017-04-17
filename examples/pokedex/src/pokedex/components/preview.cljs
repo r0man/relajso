@@ -1,6 +1,6 @@
 (ns pokedex.components.preview
   (:require-macros [pokedex.schema :refer [graphql]])
-  (:require [pokedex.history :refer [history]]
+  (:require [pokedex.history :as history]
             [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
@@ -44,7 +44,7 @@
     (let [path (str "/view/" (r/get this :props :pokemon :id))]
       (html
        [:div.preview-root
-        {:on-click #(.setToken history path)
+        {:on-click #(history/go-to path)
          :style root-style}
         (when-let [src (r/get this :props :pokemon :url)]
           [:img {:alt "Pokemon Image"

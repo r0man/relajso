@@ -1,7 +1,7 @@
 (ns pokedex.views.pokemon
   (:require-macros [pokedex.schema :refer [graphql]])
   (:require [pokedex.components.card :as card]
-            [pokedex.history :refer [history]]
+            [pokedex.history :as history]
             [relajso.core :as r]
             [sablono.core :refer-macros [html]]))
 
@@ -111,7 +111,7 @@
              {:clientMutationId (str (random-uuid))
               :name (r/get this :state :name)
               :url (r/get this :state :url)}}
-            {:on-completed #(.setToken history "/")
+            {:on-completed #(history/go-to "/")
              :on-error #(error "Can't create pokemon." %)}))
 
 (defn- update-pokemon! [this]
@@ -121,7 +121,7 @@
               :id (r/get this :state :id)
               :name (r/get this :state :name)
               :url (r/get this :state :url)}}
-            {:on-completed #(.setToken history "/")
+            {:on-completed #(history/go-to "/")
              :on-error #(error "Can't update pokemon." %)}))
 
 
@@ -130,7 +130,7 @@
             {:input
              {:clientMutationId (str (random-uuid))
               :id (r/get this :state :id)}}
-            {:on-completed #(.setToken history "/")
+            {:on-completed #(history/go-to "/")
              :on-error #(error "Can't delete pokemon." %)}))
 
 (r/defui Page
@@ -168,7 +168,7 @@
           [:div {:style action-button-container-style}
            [:div
             {:style cancel-button-style
-             :on-click #(.setToken history "/")}
+             :on-click #(history/go-to "/")}
             "Cancel"]
            [:div
             {:on-click
