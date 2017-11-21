@@ -11,6 +11,7 @@
                  ;; [cljsjs/relay-runtime "1.0.0-alpha2-0"]
                  [org.clojure/clojure "1.9.0-alpha14"]
                  [org.clojure/clojurescript "1.9.518"]
+                 [org.omcljs/om "1.0.0-beta2-SNAPSHOT"]
                  [relajso "0.1.0-SNAPSHOT"]
                  [sablono "0.8.1-SNAPSHOT"]
                  [secretary "1.2.3"]]
