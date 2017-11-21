@@ -144,9 +144,11 @@
             id
             name
             url } } }"))
+
   Object
   (componentWillReceiveProps [this props]
     (.setState this (r/get props :props :viewer :Pokemon)))
+
   (render [this]
     (when-let [props (r/get this :props :props)]
       (html
