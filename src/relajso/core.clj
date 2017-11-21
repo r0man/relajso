@@ -1,7 +1,7 @@
 (ns relajso.core
   (:require [cljs.analyzer :as ana]
             [cljs.core :refer [js-arguments specify! this-as]]
-            [clojure.spec :as s]
+            [clojure.spec.alpha :as s]
             [inflections.core :refer [hyphenate]]
             [relajso.compiler :as compiler]
             [relajso.specs :as specs])
@@ -14,7 +14,7 @@
   (compiler/compile-document compiler schema cache document))
 
 (defn conform!
-  "Like `clojure.spec/conform`, but raises an exception if `data`
+  "Like `clojure.spec.alpha/conform`, but raises an exception if `data`
   doesn't conform to `spec`."
   [spec data]
   (let [result (s/conform spec data)]
